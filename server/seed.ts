@@ -2,7 +2,7 @@ import { addDays, addHours, setHours, setMinutes, startOfDay } from "date-fns";
 import type { Booking, Room, User } from "../shared/types";
 import { writeBookings, writeRooms, writeUsers } from "./storage";
 import usersJson from "../data/users.json";
-import roomsJson from "../data/rooms.json";
+import roomsJson from "../data/rooms.json";//changed two rooms as per phase 1 requirement.
 
 const users = usersJson as User[];
 const rooms = roomsJson as Room[];

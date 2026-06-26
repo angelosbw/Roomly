@@ -6,6 +6,7 @@ import type { Booking, Equipment, User } from "../shared/types";
 import { readBookings, readRooms, readUsers, updateBookings } from "./storage";
 import {
   canModifyBooking,
+  canApproveBooking,
   findConflict,
   validateBookingTimes,
   validateCapacity,
@@ -157,6 +158,7 @@ authed.post("/bookings", async (c) => {
 
   const rooms = await readRooms();
   const room = rooms.find((item) => item.id === roomId);
+  if (!room) return c.json({ error: "Room not found" }, 404);// added this since later room is needed, and a booking cant be made on an unidentified room
   const capacityError = validateCapacity(attendees, room);
   if (capacityError) return c.json({ error: capacityError }, 400);
 
@@ -172,7 +174,7 @@ authed.post("/bookings", async (c) => {
     start,
     end,
     attendees,
-    status: "confirmed",
+    status:room.requiresApproval ? "pending" : "confirmed", //changed from hardcoded confirmed to checking if the room requires approval, if so then pending
     createdAt: new Date().toISOString(),
   };
 
@@ -217,6 +219,37 @@ authed.patch("/bookings/:id", async (c) => {
 
   return c.json({ booking: updated });
 });
+
+authed.post("/bookings/:id/approve", async (c) => {
+  const user = c.get("user");// get user
+  const bookingId = c.req.param("id"); //get booking id
+
+  const bookings = await readBookings();//read bookings from storage
+  const existing = bookings.find((booking) => booking.id === bookingId);//find the booking based on the id
+  if (!existing) return c.json({ error: "Not found" }, 404);//if it doesnt exist say it isnt found
+
+  const rooms = await readRooms();//read rooms from storage
+  const existingRoom = rooms.find((room) => room.id === existing.roomId);//find room based on the id gathered
+  
+  //use method to see if the user can approve bookings
+  if (!canApproveBooking(user, existingRoom)) {
+    return c.json({ error: "Forbidden" }, 403);
+  }
+  //can only approve if booking is pending
+  if (existing.status !== "pending") {
+    return c.json({ error: "Only pending bookings can be approved" }, 400);
+  }
+  //booking set to confirmed if all conditions before are met
+  await updateBookings((current) =>
+    current.map((booking) => {
+      if (booking.id !== bookingId) return booking;
+      return { ...booking, status: "confirmed" };//sending a new one rather than mutating old one since it might be in a shared state
+    }),
+  );
+  //
+  return c.json({ ok: true });
+});
+
 
 authed.post("/bookings/:id/cancel", async (c) => {
   const user = c.get("user");

@@ -8,7 +8,8 @@
       "projector",
       "whiteboard",
       "video_conferencing"
-    ]
+    ],
+    "requiresApproval": true
   },
   {
     "id": "r2",
@@ -17,7 +18,8 @@
     "office": "London",
     "equipment": [
       "whiteboard"
-    ]
+    ],
+    "requiresApproval": false
   },
   {
     "id": "r3",
@@ -27,7 +29,8 @@
     "equipment": [
       "projector",
       "video_conferencing"
-    ]
+    ],
+    "requiresApproval": false
   },
   {
     "id": "r4",
@@ -36,7 +39,8 @@
     "office": "Berlin",
     "equipment": [
       "whiteboard"
-    ]
+    ],
+    "requiresApproval": false
   },
   {
     "id": "r5",
@@ -46,7 +50,8 @@
     "equipment": [
       "projector",
       "whiteboard"
-    ]
+    ],
+    "requiresApproval": true
   },
   {
     "id": "r6",
@@ -56,7 +61,8 @@
     "equipment": [
       "projector",
       "video_conferencing"
-    ]
+    ],
+    "requiresApproval": false
   },
   {
     "id": "r7",
@@ -66,7 +72,8 @@
     "equipment": [
       "whiteboard",
       "video_conferencing"
-    ]
+    ],
+    "requiresApproval": false
   },
   {
     "id": "r8",
@@ -75,6 +82,7 @@
     "office": "Berlin",
     "equipment": [
       "video_conferencing"
-    ]
+    ],
+    "requiresApproval": false
   }
 ]

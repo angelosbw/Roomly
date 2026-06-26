@@ -1,7 +1,12 @@
 import type { ApiError, Booking, Room, User } from "../../shared/types";
 
+//contains import which is used to get the types
+// the ?? checks if left is null or undefined
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
+//different from interface because it is a class, which means it can be instantiated and have methods
+//classes have constructors, which are functions that are called when an instance of the class is created
+// they contain logic that is run when the class is instantiated
 class ApiClientError extends Error {
   status: number;
 
