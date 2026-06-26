@@ -1,27 +1,29 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { Calendar, DoorOpen, LayoutDashboard, LogOut } from "lucide-react";
+import { Calendar,CheckSquare,  DoorOpen, LayoutDashboard, LogOut } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { ROLE_LABELS } from "@/lib/labels";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 const nav: {
-  to: "/" | "/rooms" | "/bookings";
+  to: "/" | "/rooms" | "/bookings" | "/approvals";
   label: string;
   icon: typeof LayoutDashboard;
   exact?: boolean;
+  approverOnly?: boolean;
 }[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/rooms", label: "Rooms", icon: DoorOpen },
   { to: "/bookings", label: "Bookings", icon: Calendar },
+  { to: "/approvals", label: "Approvals", icon: CheckSquare, approverOnly: true },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
 
   if (!user) return null;
-
+  const canApprove = user.role === "admin" || user.role === "office_manager";
   return (
     <div className="flex min-h-screen bg-background">
       <aside className="hidden md:flex w-60 shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground">
@@ -37,7 +39,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
         <nav className="flex-1 p-3 space-y-1">
-          {nav.map((n) => (
+          {nav.filter((n) => !n.approverOnly || canApprove).map((n) => (
             <Link
               key={n.to}
               to={n.to}

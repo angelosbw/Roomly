@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RoomsRouteImport } from './routes/rooms'
 import { Route as BookingsRouteImport } from './routes/bookings'
+import { Route as ApprovalsRouteImport } from './routes/approvals'
 import { Route as IndexRouteImport } from './routes/index'
 
 const RoomsRoute = RoomsRouteImport.update({
@@ -23,6 +24,11 @@ const BookingsRoute = BookingsRouteImport.update({
   path: '/bookings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApprovalsRoute = ApprovalsRouteImport.update({
+  id: '/approvals',
+  path: '/approvals',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -31,30 +37,34 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/approvals': typeof ApprovalsRoute
   '/bookings': typeof BookingsRoute
   '/rooms': typeof RoomsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/approvals': typeof ApprovalsRoute
   '/bookings': typeof BookingsRoute
   '/rooms': typeof RoomsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/approvals': typeof ApprovalsRoute
   '/bookings': typeof BookingsRoute
   '/rooms': typeof RoomsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/bookings' | '/rooms'
+  fullPaths: '/' | '/approvals' | '/bookings' | '/rooms'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/bookings' | '/rooms'
-  id: '__root__' | '/' | '/bookings' | '/rooms'
+  to: '/' | '/approvals' | '/bookings' | '/rooms'
+  id: '__root__' | '/' | '/approvals' | '/bookings' | '/rooms'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApprovalsRoute: typeof ApprovalsRoute
   BookingsRoute: typeof BookingsRoute
   RoomsRoute: typeof RoomsRoute
 }
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/approvals': {
+      id: '/approvals'
+      path: '/approvals'
+      fullPath: '/approvals'
+      preLoaderRoute: typeof ApprovalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApprovalsRoute: ApprovalsRoute,
   BookingsRoute: BookingsRoute,
   RoomsRoute: RoomsRoute,
 }

@@ -36,6 +36,16 @@ export function useBookings(params?: { roomId?: string; from?: string; to?: stri
     },
   });
 }
+//this function is used to get the pending bookings for the approvals page
+export function usePendingBookings() {
+  return useQuery({
+    queryKey: ["bookings", "pending"],
+    queryFn: async () => {
+      const { bookings } = await api.getPendingBookings();
+      return bookings;
+    },
+  });
+}
 
 export function useAllBookings() {
   return useBookings();
@@ -63,6 +73,15 @@ export function useBookingMutations() {
     mutationFn: (id: string) => api.cancelBooking(id),
     onSuccess: invalidate,
   });
+  //made mutations for approving and rejecting bookings through the api
+  const approveBooking = useMutation({
+    mutationFn: (id: string) => api.approveBooking(id),
+    onSuccess: invalidate,
+  });
+  const rejectBooking = useMutation({
+    mutationFn: (id: string) => api.rejectBooking(id),
+    onSuccess: invalidate,
+  });
 
-  return { createBooking, updateBooking, cancelBooking };
+  return { createBooking, updateBooking, cancelBooking, approveBooking, rejectBooking };
 }

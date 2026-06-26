@@ -67,6 +67,10 @@ export const api = {
     const query = search.toString();
     return request<{ bookings: Booking[] }>(`/api/bookings${query ? `?${query}` : ""}`);
   },
+  //used to get the pending bookings for the approvals page through the api
+  getPendingBookings: () => {
+    return request<{ bookings: Booking[] }>("/api/bookings/pending");  
+  },
   createBooking: (body: {
     roomId: string;
     title: string;
@@ -88,6 +92,15 @@ export const api = {
     }),
   cancelBooking: (id: string) =>
     request<{ booking: Booking }>(`/api/bookings/${id}/cancel`, {
+      method: "POST",
+    }),
+  //new methods to approve and reject bookings through the api
+  approveBooking: (id: string) =>
+    request<{ ok: true }>(`/api/bookings/${id}/approve`, {
+      method: "POST",
+    }),
+  rejectBooking: (id: string) =>
+    request<{ ok: true }>(`/api/bookings/${id}/reject`, {
       method: "POST",
     }),
 };
