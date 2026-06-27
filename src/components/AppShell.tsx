@@ -1,13 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { Calendar,CheckSquare,  DoorOpen, LayoutDashboard, LogOut } from "lucide-react";
+import { CalendarCheck, Calendar,CheckSquare,  DoorOpen, LayoutDashboard, LogOut } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { ROLE_LABELS } from "@/lib/labels";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 const nav: {
-  to: "/" | "/rooms" | "/bookings" | "/approvals";
+  to: "/" | "/rooms" | "/bookings" | "/myBookings" | "/approvals";//added myBookings and approvals to the nav
   label: string;
   icon: typeof LayoutDashboard;
   exact?: boolean;
@@ -16,7 +16,8 @@ const nav: {
   { to: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/rooms", label: "Rooms", icon: DoorOpen },
   { to: "/bookings", label: "Bookings", icon: Calendar },
-  { to: "/approvals", label: "Approvals", icon: CheckSquare, approverOnly: true },
+  { to: "/myBookings", label: "My Bookings", icon: CalendarCheck },//added
+  { to: "/approvals", label: "Approvals", icon: CheckSquare, approverOnly: true },//added
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {

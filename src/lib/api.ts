@@ -71,6 +71,9 @@ export const api = {
   getPendingBookings: () => {
     return request<{ bookings: Booking[] }>("/api/bookings/pending");  
   },
+  getMyBookings: () => {
+    return request<{ bookings: Booking[] }>("/api/bookings/mine");  
+  },
   createBooking: (body: {
     roomId: string;
     title: string;

@@ -77,7 +77,6 @@ function BookingsPage() {
           roomId: activeRoomId,
           from: startOfDay(weekStart).toISOString(),
           to: weekEnd.toISOString(),
-          status: "confirmed",
         }
       : undefined,
   );
@@ -184,6 +183,7 @@ function BookingsPage() {
               ))}
               {bookings
                 .filter((b) => isSameDay(new Date(b.start), d))
+                .filter((b) => b.status === "confirmed" || b.status === "pending")//added this filted so that the pending bookings are also shown on the calendar, as per phase 1 requirement
                 .map((b) => {
                   const start = new Date(b.start);
                   const end = new Date(b.end);
@@ -199,8 +199,11 @@ function BookingsPage() {
                         setEditing({ booking: b });
                       }}
                       style={{ top, height }}
-                      className="absolute left-1 right-1 rounded-md bg-primary/90 hover:bg-primary text-primary-foreground text-left px-2 py-1.5 text-xs overflow-hidden shadow-sm border border-primary"
-                    >
+                     className={`absolute left-1 right-1 rounded-md text-left px-2 py-1.5 text-xs overflow-hidden shadow-sm border ${
+                          b.status === "pending"
+                            ? "bg-background border-dashed border-primary text-foreground"
+                            : "bg-primary/90 hover:bg-primary text-primary-foreground border-primary"
+                        }`}>
                       <div className="font-medium truncate">{b.title}</div>
                       <div className="opacity-90 truncate">
                         {format(start, "HH:mm")}–{format(end, "HH:mm")} · {bookingUser?.name}

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Booking, Room, User } from "../shared/types";
 import {
   canModifyBooking,
+  canApproveBooking,
   findConflict,
   overlaps,
   validateBookingTimes,
@@ -62,6 +63,28 @@ describe("validateCapacity", () => {
 });
 
 describe("overlaps", () => {
+  it("blocks slots for a pending booking", () => {
+    expect(
+      overlaps(
+        booking({ status: "pending" }),
+        "2026-06-23T10:30:00.000Z",
+        "2026-06-23T11:30:00.000Z",
+        "r1",
+      ),
+    ).toBe(true);
+  });
+
+  it("ignores rejected bookings", () => {
+    expect(
+      overlaps(
+        booking({ status: "rejected" }),
+        "2026-06-23T10:30:00.000Z",
+        "2026-06-23T1 1:30:00.000Z",
+        "r1",
+      ),
+    ).toBe(false);
+  });
+
   it("detects overlap with a confirmed booking", () => {
     expect(
       overlaps(
@@ -140,3 +163,30 @@ describe("canModifyBooking", () => {
     ).toBe(false);
   });
 });
+
+describe("canApproveBooking", () => {
+  const b = booking();
+  it("allows admins", () => {
+    expect(canApproveBooking(user({role: "admin"}), room())).toBe(true);
+  });
+  it("allows office managers for their office", () => {
+    expect(
+      canApproveBooking(
+        user({ role: "office_manager", managedOffice: "London" }),
+        room({ office: "London" }),
+      ),
+    ).toBe(true);
+  });
+  it("denies office managers for other offices", () => {
+    expect(
+      canApproveBooking(
+        user({ role: "office_manager", managedOffice: "London" }),
+        room({ office: "Berlin" }),
+      ),
+    ).toBe(false);
+  });
+  it("denies employees, even if it is their own booking", () => {
+    expect(canApproveBooking(user({ role: "employee" }), room())).toBe(false);
+  });
+
+  });

@@ -122,6 +122,7 @@ app.get("/api/rooms/:id", async (c) => {
   return c.json({ room });
 });
 
+//thought to change to authed.get but understood the workflow of the calendar gives errors after that
 app.get("/api/bookings", async (c) => {
   const roomId = c.req.query("roomId");
   const status = c.req.query("status");
@@ -220,6 +221,7 @@ authed.patch("/bookings/:id", async (c) => {
   return c.json({ booking: updated });
 });
 
+//added this route so bookings can be approved by the correct user
 authed.post("/bookings/:id/approve", async (c) => {
   const user = c.get("user");// get user
   const bookingId = c.req.param("id"); //get booking id
@@ -243,12 +245,13 @@ authed.post("/bookings/:id/approve", async (c) => {
   await updateBookings((current) =>
     current.map((booking) => {
       if (booking.id !== bookingId) return booking;
-      return { ...booking, status: "confirmed" };//sending a new one rather than mutating old one since it might be in a shared state
+      return { ...booking, status: "confirmed" };//sending a new booking rather than mutating old one since it might be in a shared state
     }),
   );
   return c.json({ ok: true });
 });
 
+//added this route so bookings can be rejected by the correct user
 authed.post("/bookings/:id/reject", async (c) => {
   const user = c.get("user");// get user
   const bookingId = c.req.param("id"); //get booking id
@@ -270,21 +273,32 @@ authed.post("/bookings/:id/reject", async (c) => {
   }
   
   //booking set to rejected if all conditions before are met
-  
   await updateBookings((current) =>
     current.map((booking) => {
       if (booking.id !== bookingId) return booking;
-      return { ...booking, status: "rejected" };//sending a new one rather than mutating old one since it might be in a shared state
+      return { ...booking, status: "rejected" };//sending a new booking rather than mutating old one since it might be in a shared state
     }),
   );
   return c.json({ ok: true });
 });
 
+//made this separate route to get the bookings for the user that is logged in, so that they can see their own bookings
+// this is instead of using the app.get bookings as it would break the calendar functionality from how i tried.
+authed.get("/bookings/mine", async (c) => {
+  const user = c.get("user");
+  const all = await readBookings();
+  const mine = all.filter((booking) => booking.userId === user.id);
+  return c.json({ bookings: mine });
+});
+
+//made this route to gather pending bookings for the user
 authed.get("/bookings/pending", async (c) => {
-  const bookingsToGive: Booking[] = [];
-  const bookings = await readBookings();
-  const rooms = await readRooms();
-  const pendingBookings = bookings.filter((booking) => booking.status === "pending");
+  const bookingsToGive: Booking[] = [];//array to hold the bookings that can be approved by the user
+  const bookings = await readBookings();//read all bookings from storage
+  const rooms = await readRooms();//read all rooms from storage
+  const pendingBookings = bookings.filter((booking) => booking.status === "pending");//filter the bookings to only get the pending ones
+  
+  //loop through the pending bookings and check if the user can approve them, if so add them to the array to be sent back
   for (const booking of pendingBookings) {
     const room = (rooms.find((room) => room.id === booking.roomId));
     if (canApproveBooking(c.get("user"), room)) {
@@ -293,6 +307,7 @@ authed.get("/bookings/pending", async (c) => {
   }
   return c.json({ bookings: bookingsToGive });
 });
+
 authed.post("/bookings/:id/cancel", async (c) => {
   const user = c.get("user");
   const bookingId = c.req.param("id");

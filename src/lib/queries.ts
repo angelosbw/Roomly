@@ -47,6 +47,17 @@ export function usePendingBookings() {
   });
 }
 
+// this function is used to get the bookings for the logged in user, so that they can see their own bookings
+export function useMyBookings() {
+  return useQuery({
+    queryKey: ["bookings", "mine"],
+    queryFn: async () => {
+      const { bookings } = await api.getMyBookings();
+      return bookings;
+    },
+  });
+}
+
 export function useAllBookings() {
   return useBookings();
 }
@@ -73,6 +84,7 @@ export function useBookingMutations() {
     mutationFn: (id: string) => api.cancelBooking(id),
     onSuccess: invalidate,
   });
+  
   //made mutations for approving and rejecting bookings through the api
   const approveBooking = useMutation({
     mutationFn: (id: string) => api.approveBooking(id),

@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useAuth } from "@/lib/auth";
 import { usePendingBookings, useBookingMutations, useRooms } from "@/lib/queries";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { ApiClientError } from "@/lib/api";
+import {StatusBadge} from "@/components/StatusBadge";
 
 // this page was made to show the pending bookings for the correct user to approve or reject bookings
 export const Route = createFileRoute('/approvals')({
@@ -42,7 +42,10 @@ function ApprovalsPage() {
             return (
               <Card key={b.id} className="p-4 flex items-center justify-between gap-4">
                 <div>
-                  <div className="font-medium">{b.title}</div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{b.title}</span>
+                    <StatusBadge status={b.status} />
+                  </div>
                   <div className="text-sm text-muted-foreground">
                     {room?.name ?? "Unknown room"} · {format(new Date(b.start), "d MMM, HH:mm")}–
                     {format(new Date(b.end), "HH:mm")}

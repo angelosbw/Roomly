@@ -1,8 +1,5 @@
-import type { Booking, Room, User } from "../shared/types";// is getting the types from the other file
+import type { Booking, Room, User } from "../shared/types";
 
-// function to check if a booking is overlapping 
-// it uses the elements from the types from the other file
-// from these types, it then creates a function
 export function overlaps(
   booking: Booking,
   startISO: string,
@@ -10,7 +7,6 @@ export function overlaps(
   roomId: string,
   ignoreId?: string,
 ) {
-  //does this booking block the slot im asking about? 
   //changed from the original to instead allow if its not pending or confirmed. as per phase 1 requirement  
   if (booking.id === ignoreId) return false;
   if (booking.status !== "pending" && booking.status !== "confirmed") return false;
@@ -18,7 +14,6 @@ export function overlaps(
   return new Date(booking.start) < new Date(endISO) && new Date(booking.end) > new Date(startISO);
 }
 
-//this function does the same although different syntax structure
 export function canModifyBooking(user: User, booking: Booking, room: Room | undefined) {
   if (booking.userId === user.id) return true;
   if (user.role === "admin") return true;
@@ -26,7 +21,7 @@ export function canModifyBooking(user: User, booking: Booking, room: Room | unde
   return false;
 }
 
-//method to check if the role of user allows for them to approve bookings. 
+//method to check if the role of user allows for them to approve bookings depending on role and office they manage 
 export function canApproveBooking(user:User, room: Room | undefined) {
   if (user.role === "admin") return true;
   if (user.role === "office_manager" && room && user.managedOffice === room.office) return true;

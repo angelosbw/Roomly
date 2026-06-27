@@ -17,7 +17,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Calendar, Monitor, PenSquare, Users, Video, Search } from "lucide-react";
+import { Calendar, Lock, Monitor, PenSquare, Users, Video, Search } from "lucide-react";
 
 export const Route = createFileRoute("/rooms")({
   head: () => ({
@@ -169,6 +169,11 @@ function RoomsPage() {
                   <div>
                     <h3 className="font-semibold text-lg leading-none">{r.name}</h3>
                     <p className="text-xs text-muted-foreground mt-1.5">{r.office}</p>
+                    {r.requiresApproval && (
+                      <Badge variant="outline" className="mt-2 gap-1">
+                        <Lock className="size-3" /> Approval required
+                      </Badge>
+                    )}
                   </div>
                   <Badge variant="secondary" className="gap-1">
                     <Users className="size-3" /> {r.capacity}
