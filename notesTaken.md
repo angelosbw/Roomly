@@ -5,6 +5,25 @@ structure of code, and functionality of the app itself, I started reading the fi
 
 During that process, I understood where everything was stored, commented sections accordingly and started working on Phase 1
 
+## How to run the app
+Requirements: Node 20+.
+
+From the folder where the whole project is:
+1. Install dependencies:  npm install
+2. Seed the data:         npm run db:reset
+3. Start the app:         npm run dev
+   - Web app runs on http://localhost:5173
+   - API runs on http://localhost:3001
+
+Log in with one of the seeded accounts (password is ignored), e.g.
+   - alex@acme.co       (employee)
+   - jordan@acme.co     (office manager for London)
+   - sam@acme.co        (admin)
+
+## How to run the tests
+   npm test
+   (all 17 pass; they also pass after npm run db:reset)
+   
 ## How the app works
 Roomly works as follows: 
 - A request flows from the page you're looking at, through a small client say "bridge" that makes a HTTP call, to a server route which then reads or writes the data into the JSON files.
