@@ -163,10 +163,8 @@ authed.post("/bookings", async (c) => {
   const capacityError = validateCapacity(attendees, room);
   if (capacityError) return c.json({ error: capacityError }, 400);
 
-  const bookings = await readBookings();
-  const conflict = findConflict(bookings, start, end, roomId);
-  if (conflict) return c.json({ error: "Room is already booked for that time" }, 409);
-
+  //here the code was first reading the bookings, then finding a conflict with the times, and then creating a booking object. all this without using a lock, therefore creating issues with the double bookings.
+  //the code now creates the booking for each request first, then with a lock (one request at a time) checks if there is a conflict, if there isnt it makes the booking, it will then do the locked writing of creating a booking.
   const booking: Booking = {
     id: "b" + crypto.randomUUID().slice(0, 8),
     roomId,
@@ -179,7 +177,15 @@ authed.post("/bookings", async (c) => {
     createdAt: new Date().toISOString(),
   };
 
-  await updateBookings((current) => [...current, booking]);
+  let conflict = false;
+  await updateBookings((current) => {
+    if (findConflict(current, start, end, roomId)) {
+      conflict = true;
+      return current; // no change
+    }
+    return [...current, booking];
+  });
+  if (conflict) return c.json({ error: "Room is already booked for that time" }, 409);
   return c.json({ booking }, 201);
 });
 
@@ -206,18 +212,23 @@ authed.patch("/bookings/:id", async (c) => {
   const capacityError = validateCapacity(merged.attendees, room);
   if (capacityError) return c.json({ error: capacityError }, 400);
 
-  const conflict = findConflict(bookings, merged.start, merged.end, merged.roomId, bookingId);
-  if (conflict) return c.json({ error: "Room is already booked for that time" }, 409);
-
+  //here the code was first reading the bookings, then finding a conflict with the times, all outside of a lock, just like the POST booking issue, therefore creating the same double booking problem when editing.
+  //the code now does the conflict check inside the lock (one request at a time), and only if there is no conflict it writes the edited booking. the booking's own id is ignored in the check so it doesnt clash with its own current slot.
+  let conflict = false;
   let updated: Booking | undefined;
-  await updateBookings((current) =>
-    current.map((booking) => {
+  await updateBookings((current) => {
+    if (findConflict(current, merged.start, merged.end, merged.roomId, bookingId)) {
+      conflict = true;
+      return current; // no change
+    }
+    return current.map((booking) => {
       if (booking.id !== bookingId) return booking;
       updated = merged;
       return merged;
-    }),
-  );
+    });
+  });
 
+  if (conflict) return c.json({ error: "Room is already booked for that time" }, 409);
   return c.json({ booking: updated });
 });
 

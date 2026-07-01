@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useBookings, useRooms } from "@/lib/queries";
 import { EQUIPMENT_LABELS } from "@/lib/labels";
 import type { Equipment } from "@/lib/types";
@@ -34,14 +34,13 @@ const EQUIPMENT_ICON: Record<Equipment, typeof Monitor> = {
   video_conferencing: Video,
 };
 
-function RoomBookingCount({ roomId }: { roomId: string }) {
-  const { data: bookings = [], isLoading } = useBookings({ roomId });
-  const count = bookings.filter((b) => b.status !== "cancelled").length;
-
+function RoomBookingCount({ count }: { count: number }) {
+  //took off the call for each room and instead put it on the parent method to call once for all rooms, therefore not creating latency when loading rooms when there are loads of bookings
+  
   return (
     <p className="text-xs text-muted-foreground mt-3 flex items-center gap-1.5">
       <Calendar className="size-3" />
-      {isLoading ? "Loading bookings…" : `${count} active booking${count === 1 ? "" : "s"}`}
+      {`${count} active booking${count === 1 ? "" : "s"}`}
     </p>
   );
 }
@@ -52,22 +51,36 @@ function RoomsPage() {
   const [office, setOffice] = useState<string>("all");
   const [minCap, setMinCap] = useState<string>("any");
   const [equip, setEquip] = useState<Set<Equipment>>(new Set());
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(1); //page state
 
   const equipment = useMemo(() => Array.from(equip), [equip]);
+  
+  useEffect(() => {
+    setPage(1);
+  }, [q, office, minCap, equipment]);
+
   const { data: rooms = [], isLoading } = useRooms({
     q: q || undefined,
     office: office !== "all" ? office : undefined,
     minCapacity: minCap !== "any" ? minCap : undefined,
     equipment: equipment.length ? equipment : undefined,
   });
-
+  const { data: allbookings = []} = useBookings();
   const { data: allRooms = [] } = useRooms();
 
   const offices = useMemo(
     () => Array.from(new Set(allRooms.map((r) => r.office))).sort(),
     [allRooms],
   );
+
+  const bookingCounts = useMemo(() => {
+    const counts: Record<string, number> = {};//empty ibject
+    for (const b of allbookings) {//for each booking in the booking list
+      if (b.status === "cancelled") continue;   // skip cancelled, matching the original that was there
+      counts[b.roomId] = (counts[b.roomId] ?? 0) + 1;//takes the current count of that room and adds 1, or if it wasn't set before, it sets it to 0 then adds 1
+    }
+    return counts;
+  }, [allbookings]);//makes this happen only when allbookings changes, otherwise it doesnt make it happen on every render
 
   const totalPages = Math.max(1, Math.ceil(rooms.length / PAGE_SIZE));
   const pagedRooms = rooms.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -195,7 +208,7 @@ function RoomsPage() {
                     <span className="text-xs text-muted-foreground">No equipment</span>
                   )}
                 </div>
-                <RoomBookingCount roomId={r.id} />
+                <RoomBookingCount count={bookingCounts[r.id] ?? 0 } />
                 <Button
                   variant="outline"
                   size="sm"

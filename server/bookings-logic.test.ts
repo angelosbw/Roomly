@@ -31,6 +31,7 @@ const room = (overrides: Partial<Room> = {}): Room => ({
   office: "London",
   equipment: [],
   ...overrides,
+  requiresApproval: false
 });
 
 const user = (overrides: Partial<User> = {}): User => ({
@@ -129,6 +130,17 @@ describe("findConflict", () => {
       "r1",
     );
     expect(conflict?.id).toBe("b99");
+  });
+  //phase 2 incident 2 test
+  it("finds a conflict for identical slots in the same room", () => {
+  const existing = booking({ id: "b1", roomId: "r1" });
+  const conflict = findConflict(
+    [existing],
+    "2026-06-23T10:00:00.000Z",
+    "2026-06-23T11:00:00.000Z",
+    "r1",
+    );
+    expect(conflict?.id).toBe("b1");
   });
 });
 
